@@ -65,9 +65,17 @@ _No ESGs._
 
 ## Contracts
 {% if tenant.contracts %}
-| Name | Scope | Subjects |
-|------|-------|----------|
-{% for c in tenant.contracts %}| {{ c.name }} | {{ c.scope|default('tenant') }} | {{ (c.subjects|length)|default(0) }} |
+| Name | Scope | Subjects | Providers | Consumers |
+|------|-------|----------|-----------|-----------|
+{% for c in tenant.contracts %}
+| {{ c.name }} | {{ c.scope|default('tenant') }} | {%- if c.subjects -%}
+  {%- for s in c.subjects -%}
+    {{ s.name }}{%- if s.flags %} ({{ s.flags|join(', ') }}){% endif %}
+    {%- if s.filters %}<br/>Filters: {{ s.filters|join(', ') }}{% endif %}
+    {%- if s.graphs %}<br/>Service Graphs: {{ s.graphs|join(', ') }}{% endif %}
+    {%- if not loop.last %}<br/><br/>{% endif -%}
+  {%- endfor -%}
+{%- else -%}—{%- endif -%} | {{ c.providers|join('<br/>') if c.providers else 'None' }} | {{ c.consumers|join('<br/>') if c.consumers else 'None' }} |
 {% endfor %}
 {% else %}
 _No Contracts._

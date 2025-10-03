@@ -77,7 +77,8 @@ _No Contracts._
 {% if tenant.l3outs %}
 | Name | VRF | Protocols | External Subnets |
 |------|-----|-----------|------------------|
-{% for l in tenant.l3outs %}| {{ l.name }} | {{ l.vrf|default('') }} | {{ l.protocols|join(', ') }} | {{ l.external_subnets|length }} |
+{% for l in tenant.l3outs -%}
+| {{ l.name }} | {{ l.vrf|default('') }} | {{ l.protocols|join(', ') if l.protocols else 'None' }} | {{ l.external_subnets|default(0) }} |
 {% endfor %}
 {% else %}
 _No L3Outs._

@@ -28,7 +28,6 @@ def run_harvest(api, sections, debug_enabled=False):
             entry['contracts'] = harvest_contracts_for_tenant(api, tn)
         if sections.get('l3out'):
             entry['l3outs'] = harvest_l3out_for_tenant(api, tn)
-            # Map L3Outs to VRFs for display convenience
             vrf_map = {}
             for lo in entry.get('l3outs', []):
                 vrf = lo.get('vrf')

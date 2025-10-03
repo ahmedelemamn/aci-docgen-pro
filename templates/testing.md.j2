@@ -17,13 +17,24 @@ This section lists practical tests to validate key features discovered from the 
   - **Contract:** {{ c.name }} — run TCP/UDP tests for each subject (e.g., `iperf`, `curl`, `nc`). Ensure deny logs where expected.
 {% endfor %}
 
-### 3) L3Outs
-{% for l in t.l3outs or [] %}
-- **L3Out {{ l.name }} (VRF {{ l.vrf }})** — Validate:
-  - OSPF/BGP session up: {{ l.protocols|join(', ') if l.protocols else 'N/A' }}
-  - Received/advertised routes include: {{ l.external_subnets|length }} external subnet(s)
-  - Ping upstream next-hop and public test IP (if allowed).
+## L3Out Validation
+{% if data.tenants %}
+{% for t in data.tenants if t.l3outs %}
+### Tenant {{ t.name }} — L3Outs
+{% for l in t.l3outs -%}
+- L3Out **{{ l.name }}** (VRF: {{ l.vrf|default('—') }})
+  - Protocols expected: {{ l.protocols|join(', ') if l.protocols else 'None' }}
+  - External subnets configured: **{{ l.external_subnets|default(0) }}**
+  - Tests:
+    1. Control-plane adjacencies for {{ l.protocols|join('/') if l.protocols else 'BGP/OSPF' }} are up.
+    2. Learned/advertised routes match design.
+    3. Traffic to/from external networks succeeds for permitted contracts.
 {% endfor %}
+{% endfor %}
+{% else %}
+_No L3Outs to test._
+{% endif %}
+
 
 ### 4) L2Outs
 {% for l2 in t.l2outs or [] %}

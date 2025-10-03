@@ -37,23 +37,21 @@ def harvest_l3out_for_tenant(api, tenant):
             lo_by_dn[dn] = {
                 'name': a.get('name'),
                 'dn': dn,
-                'vrf': "",           # filled by l3extRsEctx
-                'protocols': set(),  # 'BGP', 'OSPF'
+                'vrf': "",
+                'protocols': set(),
                 'external_subnets': 0
             }
 
     if not lo_by_dn:
         return []
 
-    # Resolve VRF via l3extRsEctx.tDn
     for item in subtree.get('imdata', []):
         if 'l3extRsEctx' in item:
             a = simple_attr(item, 'l3extRsEctx')
-            parent_out = a.get('dn', '').split('/rsectx-')[0]  # parent is the l3extOut DN
+            parent_out = a.get('dn', '').split('/rsectx-')[0]
             if parent_out in lo_by_dn:
                 lo_by_dn[parent_out]['vrf'] = _vrf_name_from_tdn(a.get('tDn', ''))
 
-    # External subnets count (under instP)
     for item in subtree.get('imdata', []):
         if 'l3extSubnet' in item:
             a = simple_attr(item, 'l3extSubnet')
@@ -61,7 +59,6 @@ def harvest_l3out_for_tenant(api, tenant):
             if l3out_dn in lo_by_dn:
                 lo_by_dn[l3out_dn]['external_subnets'] += 1
 
-    # Protocol hints: mark BGP/OSPF if any matching policy exists under this L3Out
     for item in subtree.get('imdata', []):
         for cls in ('bgpExtP', 'bgpPeerP', 'bgpProtP', 'bgpRsPeerPfxPol', 'bgpAsP',
                     'ospfExtP', 'ospfIfP', 'ospfCtxPol', 'ospfRsIfPol'):
@@ -74,12 +71,10 @@ def harvest_l3out_for_tenant(api, tenant):
                     if cls.startswith('ospf'):
                         lo_by_dn[l3out_dn]['protocols'].add('OSPF')
 
-    # Normalize sets
     los = []
     for lo in lo_by_dn.values():
         lo['protocols'] = sorted(lo['protocols'])
         los.append(lo)
 
-    # Sort for stable output
     los.sort(key=lambda x: x['name'])
     return los

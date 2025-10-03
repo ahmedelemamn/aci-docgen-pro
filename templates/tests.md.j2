@@ -32,9 +32,11 @@ This file is generated from discovered features. Fill actual results as you exec
 {% if t.service_graphs %}
 ### Service Graph Tests
 {% for g in t.service_graphs %}
-- [ ] **Graph {{ g.name }}** nodes: {{ g.nodes|map(attribute='name')|list|join(' → ') }}
+- [ ] **Graph {{ g.name }}** nodes:
+  - {%- for n in g.nodes %} {{ n.name }}{% if n.funcType %} ({{ n.funcType }}){% endif %}{% if not loop.last %};{% endif %}{% endfor %}
+- [ ] Connector flows: {% if g.connections %}{% for c in g.connections %}{{ c.summary }}{% if not loop.last %}, {% endif %}{% endfor %}{% else %}None{% endif %}
   - [ ] Verify redirect policy hits on device (counters/logs)
-  - [ ] Exercise Contract Subjects bound to this graph ({{ g.bound_contract_subjects|map(attribute='contract')|list|join(', ') }})
+  - [ ] Exercise Contract Subjects bound to this graph ({% if g.bound_contract_subjects %}{% for b in g.bound_contract_subjects %}{{ b.contract }}{% if b.subject and b.subject != '—' %}→{{ b.subject }}{% endif %}{% if not loop.last %}, {% endif %}{% endfor %}{% else %}None{% endif %})
   - [ ] Verify return traffic symmetry and health probes
 {% endfor %}
 {% endif %}

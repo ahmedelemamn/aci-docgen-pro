@@ -47,8 +47,10 @@ _No L3Outs to test._
 ### 5) Service Graphs
 {% for g in t.service_graphs or [] %}
 - **Graph {{ g.name }}** — Validate traffic redirection across nodes:
-  - Nodes: {% for n in g.nodes %}{{ n.name }} ({{ n.funcType|default('func') }}){% if not loop.last %}, {% endif %}{% endfor %}
-  - If redirect policies: {{ g.redirect_policies|map(attribute='name')|list|join(', ') or 'None' }}
+  - Nodes: {% for n in g.nodes %}{{ n.name }}{% if n.funcType %} ({{ n.funcType }}){% endif %}{% if n.connectors %} — connectors: {% for c in n.connectors %}{{ c.summary }}{% if not loop.last %}, {% endif %}{% endfor %}{% endif %}{% if not loop.last %}; {% endif %}{% endfor %}
+  - Connector flows: {% if g.connections %}{% for c in g.connections %}{{ c.summary }}{% if not loop.last %}; {% endif %}{% endfor %}{% else %}None{% endif %}
+  - Redirect policies: {{ g.redirect_policies|join(', ') if g.redirect_policies else 'None' }}
+  - Bound contract subjects: {% if g.bound_contract_subjects %}{% for b in g.bound_contract_subjects %}{{ b.contract }}{% if b.subject and b.subject != '—' %}→{{ b.subject }}{% endif %}{% if not loop.last %}, {% endif %}{% endfor %}{% else %}None{% endif %}
   - Run bidirectional tests (client↔server) and ensure policy hits/logs on device.
 {% endfor %}
 

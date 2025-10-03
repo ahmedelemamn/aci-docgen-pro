@@ -124,9 +124,19 @@ _No L2Outs._
 
 ## Service Graphs
 {% if tenant.service_graphs %}
-| Graph | Nodes | Redirect Policies | Bound Contract→Subject |
-|-------|-------|-------------------|------------------------|
-{% for g in tenant.service_graphs %}| {{ g.name }} | {{ g.nodes|map(attribute='name')|list|join(' → ') }} | {{ g.redirect_policies|join(', ') }} | {{ g.bound_contract_subjects|map(attribute='contract')|list|join(', ') }} |
+| Graph | Nodes (Function Type & Connectors) | Connector Flows | Redirect Policies | Bound Contract → Subject |
+|-------|------------------------------------|-----------------|-------------------|--------------------------|
+{% for g in tenant.service_graphs %}| {{ g.name }} |{%- if g.nodes and g.nodes|length > 0 -%}
+  {%- for n in g.nodes -%}
+    {{ n.name }}{% if n.funcType %} ({{ n.funcType }}){% endif %}
+    {%- if n.connectors and n.connectors|length > 0 %}<br/><small>Connectors: {%- for c in n.connectors -%}{{ c.summary }}{% if not loop.last %}, {% endif %}{%- endfor -%}</small>{% endif %}
+    {% if not loop.last %}<br/><br/>{% endif %}
+  {%- endfor -%}
+{%- else -%} —{%- endif -%} | {%- if g.connections and g.connections|length > 0 -%}{%- for c in g.connections -%}{{ c.summary }}{% if not loop.last %}<br/>{% endif %}{%- endfor -%}{%- else -%}—{%- endif -%} | {{ g.redirect_policies|join(', ') if g.redirect_policies else '—' }} |{%- if g.bound_contract_subjects and g.bound_contract_subjects|length > 0 -%}
+  {%- for b in g.bound_contract_subjects -%}
+    {{ b.contract }}{% if b.subject and b.subject != '—' %} → {{ b.subject }}{% endif %}{% if not loop.last %}<br/>{% endif %}
+  {%- endfor -%}
+{%- else -%}—{%- endif -%} |
 {% endfor %}
 {% else %}
 _No Service Graphs._

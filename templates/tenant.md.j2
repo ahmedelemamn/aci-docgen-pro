@@ -94,9 +94,9 @@ _No L3Outs._
 
 ## VMM Domains
 {% if tenant.vmm %}
-| Domain | Type | vCenter |
-|--------|------|---------|
-{% for v in tenant.vmm %}| {{ v.name }} | {{ v.type }} | {{ v.vcenter|default('') }} |
+| Domain | Type | Mode | Controllers / vCenters | VLAN Pools |
+|--------|------|------|------------------------|------------|
+{% for v in tenant.vmm %}| {{ v.name }} | {{ v.type }} | {{ v.mode|default('—') }} | {{ v.vcenter|join('<br/>') if v.vcenter else '—' }} | {{ v.vlan_pools|join('<br/>') if v.vlan_pools else '—' }} |
 {% endfor %}
 {% else %}
 _No VMM domains bound in this tenant._

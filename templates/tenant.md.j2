@@ -2,13 +2,15 @@
 
 ## VRFs
 {% if tenant.vrfs %}
-| Name | Policy Enforcement | Enforced On|
-|------|---------------------|----------|
-{% for v in tenant.vrfs %}| {{ v.name }} | {{ v.pcEnfPref|default('N/A') }} | {{ v.pcEnfDir|default('N/A') }} |
+| Name | Enforcement | Direction | Known MCast | IP DP Learning | Health | BDs | vzAny Provided | vzAny Consumed | L3Outs |
+|------|-------------|-----------|-------------|----------------|--------|-----|----------------|----------------|--------|
+{% for v in tenant.vrfs -%}
+| {{ v.name }} | {{ v.pcEnfPref|default('—') }} | {{ v.pcEnfDir|default('—') }} | {{ v.knwMcastAct|default('—') }} | {{ v.ipDataPlaneLearning|default('—') }} | {{ v.health|default('—') }} | {{ v.bd_count|default(0) }} | {{ v.vzAny.prov_contracts|join('<br/>') if v.vzAny and v.vzAny.prov_contracts else 'None' }} | {{ v.vzAny.cons_contracts|join('<br/>') if v.vzAny and v.vzAny.cons_contracts else 'None' }} | {{ v.l3outs|join('<br/>') if v.l3outs else 'None' }} |
 {% endfor %}
 {% else %}
 _No VRFs._
 {% endif %}
+
 
 ## Bridge Domains
 {% if tenant.bds %}

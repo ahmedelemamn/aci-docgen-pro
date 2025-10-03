@@ -28,6 +28,15 @@ def run_harvest(api, sections, debug_enabled=False):
             entry['contracts'] = harvest_contracts_for_tenant(api, tn)
         if sections.get('l3out'):
             entry['l3outs'] = harvest_l3out_for_tenant(api, tn)
+            # Map L3Outs to VRFs for display convenience
+            vrf_map = {}
+            for lo in entry.get('l3outs', []):
+                vrf = lo.get('vrf')
+                if vrf:
+                    vrf_map.setdefault(vrf, []).append(lo.get('name'))
+            for v in entry.get('vrfs', []):
+                names = vrf_map.get(v.get('name'), [])
+                v['l3outs'] = sorted(names)
         if sections.get('l2out'):
             entry['l2outs'] = harvest_l2out_for_tenant(api, tn)
         if sections.get('service_graphs'):

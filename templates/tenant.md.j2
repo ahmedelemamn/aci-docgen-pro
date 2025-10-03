@@ -105,9 +105,18 @@ _No VMM domains bound in this tenant._
 
 ## L2Outs
 {% if tenant.l2outs %}
-| Name | BD | Domains | External EPGs |
-|------|----|---------|----------------|
-{% for o in tenant.l2outs %}| {{ o.name }} | {{ o.bd }} | {{ o.domains|join(', ') }} | {{ o.instps|map(attribute='name')|list|join(', ') }} |
+| L2Out | Bridge Domain | Domains | External EPG | Subnets | Path Attachments | Provided Contracts | Consumed Contracts | Protected By |
+|-------|----------------|---------|--------------|---------|------------------|--------------------|--------------------|--------------|
+{% for o in tenant.l2outs %}
+  {% set has_instps = o.instps and o.instps|length > 0 %}
+  {% set domains = o.domains|join('<br/>') if o.domains else '—' %}
+  {% if has_instps %}
+    {% for instp in o.instps %}
+| {% if loop.first %}{{ o.name }}{% endif %} | {% if loop.first %}{{ o.bd }}{% endif %} | {% if loop.first %}{{ domains }}{% endif %} | {{ instp.name }} |{%- if instp.subnets and instp.subnets|length > 0 -%}{%- for s in instp.subnets -%} {{ s.ip|default('') }}{%- if s.scope %} ({{ s.scope }}){%- endif -%}{%- if s.aggregate %} [agg {{ s.aggregate }}]{%- endif -%}{%- if s.name %} — {{ s.name }}{%- endif -%}{% if not loop.last %}<br/>{% endif %}{%- endfor -%}{%- else -%} —{%- endif -%} |{%- if instp.path_attachments and instp.path_attachments|length > 0 -%}{%- for p in instp.path_attachments -%} {%- if p.kind == 'vpc' -%}vPC {{ p.leafs|join('-') }} {{ p.iface_or_pc }}{% if p.vlan %} (vlan {{ p.vlan }}){% endif %}{%- elif p.kind == 'single' -%}Leaf {{ p.leafs[0] }} {{ p.iface_or_pc }}{% if p.vlan %} (vlan {{ p.vlan }}){% endif %}{%- else -%}{{ p.raw_tdn }}{% if p.vlan %} (vlan {{ p.vlan }}){% endif %}{%- endif -%}{%- if not loop.last %}<br/>{% endif -%}{%- endfor -%}{%- else -%} —{%- endif -%} | {{ instp.provided_contracts|join('<br/>') if instp.provided_contracts else '—' }} | {{ instp.consumed_contracts|join('<br/>') if instp.consumed_contracts else '—' }} | {{ instp.protected_by_contracts|join('<br/>') if instp.protected_by_contracts else '—' }} |
+    {% endfor %}
+  {% else %}
+| {{ o.name }} | {{ o.bd }} | {{ domains }} | — | — | — | — | — | — |
+  {% endif %}
 {% endfor %}
 {% else %}
 _No L2Outs._

@@ -1,4 +1,4 @@
-from ..utils.normalize import simple_attr
+from ..utils.normalize import collect_children, simple_attr
 
 def _l3out_dn_from(child_dn: str) -> str:
     """
@@ -32,25 +32,25 @@ def harvest_l3out_for_tenant(api, tenant):
     # Base L3Outs
     for item in subtree.get('imdata', []):
         if 'l3extOut' in item:
+            mo = item['l3extOut']
             a = simple_attr(item, 'l3extOut')
             dn = a.get('dn')
+            vrf = ""
+            for child in collect_children(mo, 'l3extRsEctx'):
+                attrs = child.get('attributes', {})
+                vrf = _vrf_name_from_tdn(attrs.get('tDn', ''))
+                if vrf:
+                    break
             lo_by_dn[dn] = {
                 'name': a.get('name'),
                 'dn': dn,
-                'vrf': "",
+                'vrf': vrf,
                 'protocols': set(),
                 'external_subnets': 0
             }
 
     if not lo_by_dn:
         return []
-
-    for item in subtree.get('imdata', []):
-        if 'l3extRsEctx' in item:
-            a = simple_attr(item, 'l3extRsEctx')
-            parent_out = a.get('dn', '').split('/rsectx-')[0]
-            if parent_out in lo_by_dn:
-                lo_by_dn[parent_out]['vrf'] = _vrf_name_from_tdn(a.get('tDn', ''))
 
     for item in subtree.get('imdata', []):
         if 'l3extSubnet' in item:

@@ -148,5 +148,3 @@ MIT License — feel free to use, modify, and share.
 
 * Cisco APIC API & Cobra SDK documentation
 * Community ACI automation tooling for inspiration
-
-```

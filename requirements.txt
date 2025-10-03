@@ -1,0 +1,4 @@
+requests
+PyYAML
+Jinja2
+pandas

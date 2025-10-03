@@ -1,0 +1,113 @@
+# Tenant: {{ tenant.name }}
+
+## VRFs
+{% if tenant.vrfs %}
+| Name | Policy Enforcement | Enforced On|
+|------|---------------------|----------|
+{% for v in tenant.vrfs %}| {{ v.name }} | {{ v.pcEnfPref|default('N/A') }} | {{ v.pcEnfDir|default('N/A') }} |
+{% endfor %}
+{% else %}
+_No VRFs._
+{% endif %}
+
+## Bridge Domains
+{% if tenant.bds %}
+| Name | Unicast Routing | ARP Flood | L2 Unknown Ucast | Limit IP Learn | Subnets |
+|------|------------------|-----------|------------------|----------------|---------|
+{% for b in tenant.bds -%}
+| {{ b.name }} | {{ b.unicastRoute|default('unknown') }} | {{ b.arpFlood|default('unknown') }} | {{ b.unkMacUcastAct|default('unknown') }} | {{ b.limitIpLearnToSubnets|default('unknown') }} | {%- if b.subnets and b.subnets|length > 0 -%}{%- for s in b.subnets -%}{{ s.ip }}{%- if s.scope %} ({{ s.scope }}){%- endif -%}{% if not loop.last %}<br/>{% endif %}{%- endfor -%}{%- else -%}—{%- endif -%} |
+{% endfor %}
+{% else %}
+_No BDs._
+{% endif %}
+
+## EPGs
+{% if tenant.epgs %}
+| App Profile | EPG | Domains | Static Paths |
+|-------------|-----|---------|--------------|
+{% for e in tenant.epgs -%}
+| {{ e.ap }} | {{ e.name }} | 
+{%- if e.domains and e.domains|length > 0 -%}
+  {%- for d in e.domains -%}{{ d }}{% if not loop.last %}<br/>{% endif %}{%- endfor -%}
+{%- else -%}—{%- endif -%}
+| 
+{%- if e.static_paths and e.static_paths|length > 0 -%}
+  {%- for p in e.static_paths -%}
+    {%- if p.kind == 'vpc' -%}
+      vPC {{ p.leafs|join('-') }} {{ p.iface_or_pc }}{% if p.vlan %} (vlan {{ p.vlan }}){% endif %}
+    {%- elif p.kind == 'single' -%}
+      Leaf {{ p.leafs[0] }} {{ p.iface_or_pc }}{% if p.vlan %} (vlan {{ p.vlan }}){% endif %}
+    {%- else -%}
+      {{ p.raw_tdn }}{% if p.vlan %} (vlan {{ p.vlan }}){% endif %}
+    {%- endif -%}
+    {%- if not loop.last %}<br/>{% endif -%}
+  {%- endfor -%}
+{%- else -%}—{%- endif -%}
+|
+{% endfor %}
+{% else %}
+_No EPGs._
+{% endif %}
+
+## Endpoint Security Groups (ESGs)
+{% if tenant.esgs %}
+| ESG | Isolation | pcTag | Provided Contracts | Consumed Contracts | EPG Selectors | IP Selectors | Tag Selectors |
+|-----|-----------|-------|--------------------|--------------------|---------------|--------------|---------------|
+{% for g in tenant.esgs -%}
+| {{ g.name }} | {{ g.pcEnfPref|default('—') }} | {{ g.pcTag|default('—') }} | {{ g.prov_contracts|join('<br/>') if g.prov_contracts else 'None' }} | {{ g.cons_contracts|join('<br/>') if g.cons_contracts else 'None' }} | {{ g.epg_selectors|join('<br/>') if g.epg_selectors else 'None' }} | {{ g.ip_selectors|join('<br/>') if g.ip_selectors else 'None' }} | {{ g.tag_selectors|join('<br/>') if g.tag_selectors else 'None' }} |
+{% endfor %}
+{% else %}
+_No ESGs._
+{% endif %}
+
+
+## Contracts
+{% if tenant.contracts %}
+| Name | Scope | Subjects |
+|------|-------|----------|
+{% for c in tenant.contracts %}| {{ c.name }} | {{ c.scope|default('tenant') }} | {{ (c.subjects|length)|default(0) }} |
+{% endfor %}
+{% else %}
+_No Contracts._
+{% endif %}
+
+## L3Outs
+{% if tenant.l3outs %}
+| Name | VRF | Protocols | External Subnets |
+|------|-----|-----------|------------------|
+{% for l in tenant.l3outs %}| {{ l.name }} | {{ l.vrf|default('') }} | {{ l.protocols|join(', ') }} | {{ l.external_subnets|length }} |
+{% endfor %}
+{% else %}
+_No L3Outs._
+{% endif %}
+
+## VMM Domains
+{% if tenant.vmm %}
+| Domain | Type | vCenter |
+|--------|------|---------|
+{% for v in tenant.vmm %}| {{ v.name }} | {{ v.type }} | {{ v.vcenter|default('') }} |
+{% endfor %}
+{% else %}
+_No VMM domains bound in this tenant._
+{% endif %}
+
+
+## L2Outs
+{% if tenant.l2outs %}
+| Name | BD | Domains | External EPGs |
+|------|----|---------|----------------|
+{% for o in tenant.l2outs %}| {{ o.name }} | {{ o.bd }} | {{ o.domains|join(', ') }} | {{ o.instps|map(attribute='name')|list|join(', ') }} |
+{% endfor %}
+{% else %}
+_No L2Outs._
+{% endif %}
+
+## Service Graphs
+{% if tenant.service_graphs %}
+| Graph | Nodes | Redirect Policies | Bound Contract→Subject |
+|-------|-------|-------------------|------------------------|
+{% for g in tenant.service_graphs %}| {{ g.name }} | {{ g.nodes|map(attribute='name')|list|join(' → ') }} | {{ g.redirect_policies|join(', ') }} | {{ g.bound_contract_subjects|map(attribute='contract')|list|join(', ') }} |
+{% endfor %}
+{% else %}
+_No Service Graphs._
+{% endif %}

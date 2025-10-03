@@ -1,0 +1,10 @@
+# ACI Fabric Documentation
+
+## Tenants
+{% if data.tenants %}
+{% for t in data.tenants %}
+- [{{t.name}}](tenants/{{t.name}}.md)
+{% endfor %}
+{% else %}
+_No tenants found._
+{% endif %}

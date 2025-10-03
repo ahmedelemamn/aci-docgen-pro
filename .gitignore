@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.db
+*.sqlite3
+
+# Virtual envs
+.venv/
+env/
+venv/
+
+# Output docs
+out/
+*.pdf
+*.xlsx
+*.csv
+
+# OS cruft
+.DS_Store
+Thumbs.db

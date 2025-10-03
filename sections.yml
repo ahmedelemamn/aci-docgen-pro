@@ -1,0 +1,14 @@
+# Toggle sections on/off
+tenants: true
+access_policies: true
+contracts: true
+esg: true
+l3out: true
+l2out: true
+service_graphs: true
+vmm: true
+external_devices: false
+exclude_system_tenants: true
+include_system_tenants: false
+testing: true
+
